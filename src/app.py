@@ -385,35 +385,35 @@ def update_frame_visualization(clip_number, viewing_type="Tile", df=df):
     else:
         raise PreventUpdate
 
-# Update the hover display on the distribution plot
-@callback(
-    Output("graph-tooltip", "show"),
-    Output("graph-tooltip", "bbox"),
-    Output("graph-tooltip", "children"),
-    Input("distribution-plot", "hoverData"),
-    Input('clip_number-dropdown', 'value'),
-)
-def display_hover(hoverData, clip_number=0, df=plotting_df):
-    if hoverData is None:
-        return False, no_update, no_update
+# # Update the hover display on the distribution plot
+# @callback(
+#     Output("graph-tooltip", "show"),
+#     Output("graph-tooltip", "bbox"),
+#     Output("graph-tooltip", "children"),
+#     Input("distribution-plot", "hoverData"),
+#     Input('clip_number-dropdown', 'value'),
+# )
+# def display_hover(hoverData, clip_number=0, df=plotting_df):
+#     if hoverData is None:
+#         return False, no_update, no_update
 
-    # demo only shows the first point, but other points may also be available
-    pt = hoverData["points"][0]
-    bbox = pt["bbox"]
-    num = pt["pointNumber"]
-    df = df[df['clip']==clip_number]
-    df_row = df.iloc[num]
-    img_src = df_row['image_path']
-    name = df_row['frame_number']
+#     # demo only shows the first point, but other points may also be available
+#     pt = hoverData["points"][0]
+#     bbox = pt["bbox"]
+#     num = pt["pointNumber"]
+#     df = df[df['clip']==clip_number]
+#     df_row = df.iloc[num]
+#     img_src = df_row['image_path']
+#     name = df_row['frame_number']
 
-    children = [
-        html.Div([
-            html.Img(src=img_src, style={"width": "100%"}),
-            html.H2(f"{name}", style={"color": "darkblue", "overflow-wrap": "break-word"}),
-        ], style={'width': '200px', 'white-space': 'normal'})
-    ]
+#     children = [
+#         html.Div([
+#             html.Img(src=img_src, style={"width": "100%"}),
+#             html.H2(f"{name}", style={"color": "darkblue", "overflow-wrap": "break-word"}),
+#         ], style={'width': '200px', 'white-space': 'normal'})
+#     ]
 
-    return True, bbox, children
+#     return True, bbox, children
 
 # Highlight the peak on the distribution plot when hovering over the scatter plot and update the player seekto
 @callback(
