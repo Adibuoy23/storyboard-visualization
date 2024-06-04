@@ -26,7 +26,7 @@ This repository contains information about using event cognition dashboard. This
 
 7. From the terminal Run the app.py file from the src directory.
    ```
-   python3 /storyboard-visualization/src/app.py --path <PATH_TO_REPO>/storyboard-visualization/data/storyboard_event_boundary_visualization.csv
+   python3 <PATH_TO_REPO>/storyboard-visualization/src/app.py --path <PATH_TO_REPO>/storyboard-visualization/data/storyboard_event_boundary_visualization.csv
    ```
 
 8. then visit http://127.0.0.1:8050 with your browser
