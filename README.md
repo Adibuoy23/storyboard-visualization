@@ -1,5 +1,5 @@
 ## Visualizing storyboards and event boundaries
-This repository contains information about using the event cognition dashboard. This installation requries Conda. Download it from [here](https://docs.anaconda.com/free/miniconda/) if not already installed on your machine. Follow these steps to set it up on your local machine. Tested with MacOs, Linux.
+This repository contains information about using the event cognition dashboard. This installation requries Conda. Download it from [here](https://docs.anaconda.com/free/miniconda/) if not already installed on your machine. Follow these steps to set it up on your local machine. Tested with MacOs Sonoma 14.4 (M2 pro), Linux.
 
 1. Clone this repository into your local machine. Change the destination path as needed. It should currently download this repo into your home directory.
    ```
