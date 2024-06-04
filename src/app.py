@@ -415,12 +415,13 @@ def display_hover(hoverData, clip_number=0, df=plotting_df):
 
     return True, bbox, children
 
-# Highlight the peak on the distribution plot when hovering over the scatter plot
+# Highlight the peak on the distribution plot when hovering over the scatter plot and update the player seekto
 @callback(
-    Output("distribution-plot", "figure", allow_duplicate=True),
-    Input("scatter-plot", "hoverData"),
+    [Output("distribution-plot", "figure", allow_duplicate=True),
+     Output('player', 'seekTo', allow_duplicate=True)],
+    [Input("scatter-plot", "hoverData"),
     Input('clip_number-dropdown', 'value'),
-    Input('scaling-type', 'value'),
+    Input('scaling-type', 'value')],
     prevent_initial_call=True
 )
 def highlight_hover(hoverData, clip_number, scale_type, df=df):
@@ -455,10 +456,12 @@ def highlight_hover(hoverData, clip_number, scale_type, df=df):
     if closest_peak_index <= df['peak_indices'].max():
         # add a rectangle around the coordinate
         fig.add_shape(type="rect", x0=max(closest_peak_index-1000, 0), y0=min(0,min_y*1.05), x1=min(closest_peak_index+1000, clip_df['pdf_len'].unique()[0]), y1=max_y*1.05, line=dict(color="black", width=0.5), fillcolor="rgba(0,0,0,0.35)")
+        seekTo = closest_peak_index/1000
     else:
         # do nothing
         pass
-    return fig
+        seekTo = no_update
+    return fig, seekTo
 
 # Run the app
 if __name__ == '__main__':
