@@ -3,7 +3,7 @@ This repository contains information about using event cognition dashboard. This
 
 1. Clone this repository into your local machine. Change the destination path '/storyboard-visualization/' as needed. It should currently download this repo into your home directory.
    ```
-   git clone https://github.com/Adibuoy23/storyboard-visualization.git /storyboard-visualization/
+   cd / && git clone https://github.com/Adibuoy23/storyboard-visualization.git
    ```
 2. Download the data necessary for visualization
    ```
