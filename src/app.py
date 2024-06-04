@@ -314,12 +314,24 @@ app.layout = html.Div([
                        dcc.Graph(id='frame-visualization', style={'display': 'inline-block', 'width': '50vh'})])
 ])
 @callback(
-    Output('player', 'url'),
-    Input('clip_number-dropdown', 'value'))
+    Output('player', 'url', allow_duplicate=True),
+    Input('clip_number-dropdown', 'value'),
+    prevent_initial_call=True)
 def update_player(clip_number, df=plotting_df):
     if clip_number is not None:
         clip = plotting_df[plotting_df['clip']==clip_number]['Movie+clip_number'].values[0]
         return 'https://adibuoy23.github.io/event_representations/videos/'+str(clip)+'.mp4'
+    else:
+        raise PreventUpdate
+# Update the player seekto based on the hovering on the distribution plot
+@callback(
+    Output('player', 'seekTo', allow_duplicate=True),
+    Input('distribution-plot', 'hoverData'),
+    prevent_initial_call=True
+)
+def update_player_seekto(hoverData):
+    if hoverData is not None:
+        return hoverData['points'][0]['pointNumber']/1000
     else:
         raise PreventUpdate
 
