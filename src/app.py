@@ -21,6 +21,7 @@ from dash import Dash, html, dash_table, dcc
 import pandas as pd
 import plotly.express as px
 import os
+import argparse
 
 # Check if the DEBUG environment variable is set
 if 'DEBUG' in os.environ:
@@ -30,8 +31,15 @@ else:
     print("No DEBUG environment variable: defaulting to debug mode")
     debug = True
 
+# get the parser object to parse the command line arguments
+parser = argparse.ArgumentParser(description='Visualizing event boundaries and storyboards')
+parser.add_argument('--debug', action='store_true', help='Run the app in debug mode')
+parser.add_argument('--path', type=str, help='Path to the data directory where the csv data is stored')
+args = parser.parse_args()
+
+
 # Load data
-plotting_df = pd.read_csv('/storyboard-visualization/data/plotting_df.csv')
+plotting_df = pd.read_csv(args.path)
 # group the plotting_df by clip and add a column of indices. This will be used to calculate the peak indices later.
 plotting_df['index'] = plotting_df.groupby('clip').cumcount()
 # rename the indices column to peak_indices
