@@ -11,9 +11,18 @@ This repository contains information about using event cognition dashboard. This
    ```
 3. Unpack the zip file, and extract its contents in place. You should find a 'storyboard_event_boundary_visualization.csv' file in this directory after extraction.
 
-4. From the terminal Run the app.py file from the src directory.
+4. Create the conda environment and install the specified packages in the requirements.txt file
+   ```
+   conda create --name events_dashboard python==3.9 pandas numpy plotly dash-player
+   ```
+5. Activate the environment
+   ```
+   conda activate events_dashboard
+   ```   
+
+7. From the terminal Run the app.py file from the src directory.
    ```
    python3 /storyboard-visualzation/src/app.py
    ```
 
-5. then visit http://127.0.0.1:8050 with your browser
+8. then visit http://127.0.0.1:8050 with your browser
