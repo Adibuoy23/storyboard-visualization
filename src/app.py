@@ -325,13 +325,14 @@ def update_player(clip_number, df=plotting_df):
         raise PreventUpdate
 # Update the player seekto based on the hovering on the distribution plot
 @callback(
-    Output('player', 'seekTo', allow_duplicate=True),
+    [Output('player', 'seekTo', allow_duplicate=True),
+     Output('player', 'playing', allow_duplicate=True)],
     Input('distribution-plot', 'hoverData'),
     prevent_initial_call=True
 )
 def update_player_seekto(hoverData):
     if hoverData is not None:
-        return hoverData['points'][0]['pointNumber']/1000
+        return hoverData['points'][0]['pointNumber']/1000, True
     else:
         raise PreventUpdate
 
@@ -418,7 +419,8 @@ def update_frame_visualization(clip_number, viewing_type="Tile", df=df):
 # Highlight the peak on the distribution plot when hovering over the scatter plot and update the player seekto
 @callback(
     [Output("distribution-plot", "figure", allow_duplicate=True),
-     Output('player', 'seekTo', allow_duplicate=True)],
+     Output('player', 'seekTo', allow_duplicate=True),
+     Output('player', 'playing', allow_duplicate=True)],
     [Input("scatter-plot", "hoverData"),
     Input('clip_number-dropdown', 'value'),
     Input('scaling-type', 'value')],
@@ -457,11 +459,13 @@ def highlight_hover(hoverData, clip_number, scale_type, df=df):
         # add a rectangle around the coordinate
         fig.add_shape(type="rect", x0=max(closest_peak_index-1000, 0), y0=min(0,min_y*1.05), x1=min(closest_peak_index+1000, clip_df['pdf_len'].unique()[0]), y1=max_y*1.05, line=dict(color="black", width=0.5), fillcolor="rgba(0,0,0,0.35)")
         seekTo = closest_peak_index/1000
+        playing=True
     else:
         # do nothing
         pass
         seekTo = no_update
-    return fig, seekTo
+        playing=False
+    return fig, seekTo, playing
 
 # Run the app
 if __name__ == '__main__':
