@@ -325,8 +325,8 @@ def update_player(clip_number, df=plotting_df):
         raise PreventUpdate
 # Update the player seekto based on the hovering on the distribution plot
 @callback(
-    [Output('player', 'seekTo', allow_duplicate=True),
-     Output('player', 'playing', allow_duplicate=True)],
+    [Output('player', 'seekTo', allow_duplicate=True)],
+    #  Output('player', 'playing', allow_duplicate=True)],
     Input('distribution-plot', 'hoverData'),
     prevent_initial_call=True
 )
@@ -419,8 +419,8 @@ def update_frame_visualization(clip_number, viewing_type="Tile", df=df):
 # Highlight the peak on the distribution plot when hovering over the scatter plot and update the player seekto
 @callback(
     [Output("distribution-plot", "figure", allow_duplicate=True),
-     Output('player', 'seekTo', allow_duplicate=True),
-     Output('player', 'playing', allow_duplicate=True)],
+     Output('player', 'seekTo', allow_duplicate=True)],
+    #  Output('player', 'playing', allow_duplicate=True)],
     [Input("scatter-plot", "hoverData"),
     Input('clip_number-dropdown', 'value'),
     Input('scaling-type', 'value')],
