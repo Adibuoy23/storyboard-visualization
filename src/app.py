@@ -46,12 +46,21 @@ plotting_df['index'] = plotting_df.groupby('clip').cumcount()
 plotting_df.rename(columns={'index': 'peak_indices'}, inplace=True)
 plotting_df['frame_number'] = plotting_df.apply(lambda x: int((x['peak_indices']/x['pdf_len'])*x['num_frames']), axis=1)
 plotting_df['image_path'] = plotting_df.apply(lambda x: 'https://adibuoy23.github.io/event_representations/video_frames/'+x['Movie+clip_number']+'/frames'+str(x['frame_number']).zfill(4)+'.jpg', axis=1)
-
+plotting_df['sb_cont_dist_norm'] = plotting_df['sb_cont_dist']/plotting_df['sb_cont_dist'].max()
+plotting_df['eb_cont_dist_norm'] = plotting_df['eb_cont_dist']/plotting_df['eb_cont_dist'].max()
 # Extract the storyboard and event boundary peaks from the plotting_df
 df = plotting_df[(plotting_df['sb_peaks']==1) | (plotting_df['eb_peaks']==1)].reset_index()
 df['type'] = df.apply(lambda x: 'storyboards' if x['sb_peaks']==1 else 'eventboundaries', axis=1)
 
 # Write functions to make figures
+def format_seconds_to_mmss(seconds):
+    seconds %= (60*60)
+    minutes = seconds // 60
+    seconds %= 60
+    msec = seconds /1000
+    seconds +=msec
+    return "%02i:%.2f" % (minutes, seconds)
+
 def make_scatter_fig(df, type='Map max to 1'):
     if type == 'Map max to 1':
         x = 'sum_dist_scaled'
@@ -107,6 +116,7 @@ def plot_distributions(plotting_df, clip_number=0, type='Map max to 1'):
     # add vertical lines wherever the sb_peaks are 1
     max_y = max(clip_data[x1].max(), clip_data[x2].max())
     min_y = min(clip_data[x1].min(), clip_data[x2].min())
+    max_x = clip_data['pdf_len'].unique()[0]
     for ix,val in enumerate(clip_data['sb_peaks'].values):
         if val:
             dist_fig.add_shape(type="line", x0=ix, y0=0, x1=ix, y1=max_y, line=dict(color="orange", width=2, dash="dash"))
@@ -325,14 +335,14 @@ def update_player(clip_number, df=plotting_df):
         raise PreventUpdate
 # Update the player seekto based on the hovering on the distribution plot
 @callback(
-    [Output('player', 'seekTo', allow_duplicate=True)],
+    Output('player', 'seekTo', allow_duplicate=True),
     #  Output('player', 'playing', allow_duplicate=True)],
     Input('distribution-plot', 'hoverData'),
     prevent_initial_call=True
 )
 def update_player_seekto(hoverData):
     if hoverData is not None:
-        return hoverData['points'][0]['pointNumber']/1000, True
+        return hoverData['points'][0]['pointNumber']/1000
     else:
         raise PreventUpdate
 
@@ -459,13 +469,12 @@ def highlight_hover(hoverData, clip_number, scale_type, df=df):
         # add a rectangle around the coordinate
         fig.add_shape(type="rect", x0=max(closest_peak_index-1000, 0), y0=min(0,min_y*1.05), x1=min(closest_peak_index+1000, clip_df['pdf_len'].unique()[0]), y1=max_y*1.05, line=dict(color="black", width=0.5), fillcolor="rgba(0,0,0,0.35)")
         seekTo = closest_peak_index/1000
-        playing=True
     else:
         # do nothing
         pass
         seekTo = no_update
         playing=False
-    return fig, seekTo, playing
+    return fig, seekTo
 
 # Run the app
 if __name__ == '__main__':
