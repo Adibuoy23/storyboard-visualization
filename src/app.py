@@ -48,6 +48,8 @@ plotting_df['frame_number'] = plotting_df.apply(lambda x: int((x['peak_indices']
 plotting_df['image_path'] = plotting_df.apply(lambda x: 'https://adibuoy23.github.io/event_representations/video_frames/'+x['Movie+clip_number']+'/frames'+str(x['frame_number']).zfill(4)+'.jpg', axis=1)
 plotting_df['sb_cont_dist_norm'] = plotting_df['sb_cont_dist']/plotting_df['sb_cont_dist'].max()
 plotting_df['eb_cont_dist_norm'] = plotting_df['eb_cont_dist']/plotting_df['eb_cont_dist'].max()
+plotting_df['sum_dist_scaled'] = plotting_df['sb_cont_dist_norm'] + plotting_df['eb_cont_dist_norm']
+plotting_df['diff_dist_scaled'] = plotting_df['sb_cont_dist_norm'] - plotting_df['eb_cont_dist_norm']
 # Extract the storyboard and event boundary peaks from the plotting_df
 df = plotting_df[(plotting_df['sb_peaks']==1) | (plotting_df['eb_peaks']==1)].reset_index()
 df['type'] = df.apply(lambda x: 'storyboards' if x['sb_peaks']==1 else 'eventboundaries', axis=1)
@@ -116,7 +118,6 @@ def plot_distributions(plotting_df, clip_number=0, type='Map max to 1'):
     # add vertical lines wherever the sb_peaks are 1
     max_y = max(clip_data[x1].max(), clip_data[x2].max())
     min_y = min(clip_data[x1].min(), clip_data[x2].min())
-    max_x = clip_data['pdf_len'].unique()[0]
     for ix,val in enumerate(clip_data['sb_peaks'].values):
         if val:
             dist_fig.add_shape(type="line", x0=ix, y0=0, x1=ix, y1=max_y, line=dict(color="orange", width=2, dash="dash"))
@@ -396,35 +397,36 @@ def update_frame_visualization(clip_number, viewing_type="Tile", df=df):
     else:
         raise PreventUpdate
 
-# # Update the hover display on the distribution plot
-# @callback(
-#     Output("graph-tooltip", "show"),
-#     Output("graph-tooltip", "bbox"),
-#     Output("graph-tooltip", "children"),
-#     Input("distribution-plot", "hoverData"),
-#     Input('clip_number-dropdown', 'value'),
-# )
-# def display_hover(hoverData, clip_number=0, df=plotting_df):
-#     if hoverData is None:
-#         return False, no_update, no_update
+# Update the hover display on the distribution plot
+@callback(
+    Output("graph-tooltip", "show"),
+    Output("graph-tooltip", "bbox"),
+    Output("graph-tooltip", "children"),
+    Input("distribution-plot", "hoverData"),
+    Input('clip_number-dropdown', 'value'),
+)
+def display_hover(hoverData, clip_number=0, df=plotting_df):
+    if hoverData is None:
+        return False, no_update, no_update
 
-#     # demo only shows the first point, but other points may also be available
-#     pt = hoverData["points"][0]
-#     bbox = pt["bbox"]
-#     num = pt["pointNumber"]
-#     df = df[df['clip']==clip_number]
-#     df_row = df.iloc[num]
-#     img_src = df_row['image_path']
-#     name = df_row['frame_number']
+    # demo only shows the first point, but other points may also be available
+    pt = hoverData["points"][0]
+    bbox = pt["bbox"]
+    num = pt["pointNumber"]
+    df = df[df['clip']==clip_number]
+    df['time_stamp'] = pd.to_datetime(np.arange(len(df)), unit='ms').strftime('%M:%S.%f')
+    df_row = df.iloc[num]
+    img_src = df_row['image_path']
+    name = df_row['frame_number']
+    timestamp = df_row['time_stamp']
 
-#     children = [
-#         html.Div([
-#             html.Img(src=img_src, style={"width": "100%"}),
-#             html.H2(f"{name}", style={"color": "darkblue", "overflow-wrap": "break-word"}),
-#         ], style={'width': '200px', 'white-space': 'normal'})
-#     ]
+    children = [
+        html.Div([
+            html.H2(f"{timestamp}", style={"color": "darkblue", "overflow-wrap": "break-word"}),
+        ], style={'width': '200px', 'white-space': 'normal'})
+    ]
 
-#     return True, bbox, children
+    return True, bbox, children
 
 # Highlight the peak on the distribution plot when hovering over the scatter plot and update the player seekto
 @callback(
