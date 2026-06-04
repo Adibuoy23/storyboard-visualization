@@ -1,4 +1,5 @@
 [
   { "label": "Storyboards fMRI", "file": "storyboards_fmri.json" },
-  { "label": "2×2 KM & EB",      "file": "data.json" }
+  { "label": "2×2 KM & EB",      "file": "data.json" },
+  { "label": "Mr. Bean",          "file": "mrbean.json" }
 ]
