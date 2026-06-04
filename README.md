@@ -1,32 +1,202 @@
-## Visualizing storyboards and event boundaries
-This repository contains information about using the event cognition dashboard. This installation requries Conda. Download it from [here](https://docs.anaconda.com/free/miniconda/) if not already installed on your machine. Follow these steps to set it up on your local machine. Tested with MacOs Sonoma 14.4 (M2 pro), Linux.
+# KM and EB Visualization
 
-1. Clone this repository into your local machine. Change the destination path as needed. It should currently download this repo into your home directory.
-   ```
-   git clone https://github.com/Adibuoy23/storyboard-visualization.git
-   ```
-2. Download the data necessary for visualization. Replace the <PATH_TO_REPO> with the path location.
-   ```
-   cd <PATH_TO_REPO>/storyboard-visualization/data/ && curl -L https://wustl.box.com/shared/static/fm92booj4a0mcaghfap2n2oij4nfdycn.zip --output storyboard_event_boundary_visualization.zip
-   ```
-3. Unpack the zip file, and extract its contents in place. You should find a 'storyboard_event_boundary_visualization.csv' file in this directory after extraction.
+An interactive browser-based viewer for comparing kernel-density (KM) and event-boundary (EB) response distributions across video clips.
 
-4. Create the conda environment and install the specified packages in the requirements.txt file
-   ```
-   conda create -n events_dashboard python==3.9.16
-   ```
-5. Activate the environment
-   ```
-   conda activate events_dashboard
-   ```
-6. Install the packages in the requirements.txt using pip. Replace the <PATH_TO_REPO> with the path location.
-   ```
-   pip3 install -r <PATH_TO_REPO>/storyboard-visualization/requirements.txt
-   ```
+**Live demo:** https://adibuoy23.github.io/storyboard-visualization/
 
-7. From the terminal Run the app.py file from the src directory.
-   ```
-   python3 <PATH_TO_REPO>/storyboard-visualization/src/app.py --path <PATH_TO_REPO>/storyboard-visualization/data/storyboard_event_boundary_visualization.csv
-   ```
+---
 
-8. then visit http://127.0.0.1:8050 with your browser
+## What it shows
+
+| Panel | Description |
+|---|---|
+| **Distribution plot** | KM and EB response curves over time for the selected clip. Hover to see the video frame at that moment. |
+| **Scatter (Peak Space)** | Every detected peak for all clips plotted as (sum, difference) of the two selected conditions. Selected clip is highlighted. Hover to highlight the corresponding peak in the distribution plot. |
+| **Timeline / Tile** | Peak frames from the selected clip arranged chronologically or as a grid. Hover to enlarge and highlight the peak in the distribution plot. |
+| **Video player** | The clip video; seeking is driven by hover events on all three plots. |
+
+---
+
+## Running locally (Python Dash app)
+
+Requires Conda. Download from https://docs.anaconda.com/free/miniconda/ if needed.
+
+```bash
+# 1. Clone
+git clone https://github.com/Adibuoy23/storyboard-visualization.git
+cd storyboard-visualization
+
+# 2. Create environment and install dependencies
+conda create -n storyboard python=3.9
+conda activate storyboard
+pip install -r requirements.txt
+
+# 3. Run
+python src/app_2x2.py
+# Open http://127.0.0.1:8051
+```
+
+---
+
+## Forking and using your own data
+
+### 1 — Fork the repository
+
+Click **Fork** on https://github.com/Adibuoy23/storyboard-visualization, then clone:
+
+```bash
+git clone https://github.com/<your-username>/storyboard-visualization.git
+cd storyboard-visualization
+```
+
+---
+
+### 2 — Prepare your data
+
+Your CSV or Parquet file must have these columns:
+
+| Column | Type | Description |
+|---|---|---|
+| `clip_name` | string | Unique identifier for each clip |
+| `time_ms` | int | Time in milliseconds within the clip |
+| `pdf_len` | int | Total length of the distribution (ms) |
+| `num_frames` | int | Total video frames in the clip |
+| `<cond>_dist` | float | One or more distribution columns |
+| `<cond>_peaks` | int (0/1) | Matching peak-indicator for each `_dist` column |
+| `clip` *(optional)* | int | Sort key; clips are ordered by this if present |
+
+**Minimum viable dataset** — one KM column and one EB column:
+
+```
+clip_name, time_ms, pdf_len, num_frames, km_dist, km_peaks, eb_dist, eb_peaks
+my_clip_1, 0, 60000, 1800, 0.0012, 0, 0.0008, 0
+my_clip_1, 1, 60000, 1800, 0.0013, 0, 0.0009, 1
+...
+```
+
+**Condition naming** — conditions are auto-detected from column names:
+- A `<cond>_dist` column whose name contains **`km`** → KM-type (warm amber colours)
+- A `<cond>_dist` column whose name contains **`eb`** → EB-type (cool teal colours)
+- At least one of each is required
+
+Examples that work: `km_dist`, `rt_km_dist`, `retro_km_dist`, `eb_dist`, `retro_eb_dist`
+
+---
+
+### 3 — Point the app at your video/image assets
+
+Open `js-app/src/constants.js` and update the two URL constants:
+
+```js
+export const IMAGE_BASE   = 'https://<your-host>/video_frames/';
+export const VIDEO_BASE   = 'https://<your-host>/videos/';
+export const CLIP_TOTAL_S = 190.0;   // total clip duration in seconds
+```
+
+The app constructs URLs like:
+```
+# Frame image
+IMAGE_BASE + clip_name + "/frames" + frameNumber.padStart(4,'0') + ".jpg"
+# e.g. https://your-host/video_frames/my_clip_1/frames0042.jpg
+
+# Video
+VIDEO_BASE + clip_name + ".mp4"
+# e.g. https://your-host/videos/my_clip_1.mp4
+```
+
+If you don't have frame images hosted, tooltips will show broken icons but everything else works fine.
+
+---
+
+### 4 — Install dependencies
+
+```bash
+# Python (data generation)
+pip install pandas numpy pyarrow
+
+# JavaScript (app build)
+cd js-app && npm install
+```
+
+---
+
+### 5 — Generate the data file
+
+```bash
+# Default — looks for data/2x2_distributions.parquet, falls back to .csv
+python3 scripts/generate_js_data.py
+
+# Custom path
+python3 scripts/generate_js_data.py --input path/to/your_data.csv
+
+# Adjust downsampling (default 50; 180k pts → 3.6k pts for display)
+python3 scripts/generate_js_data.py --downsample 30
+```
+
+This writes `js-app/public/data/data.json` (~5–10 MB depending on clip count).
+
+---
+
+### 6 — Run locally
+
+```bash
+cd js-app
+npm run dev       # dev server with live reload → http://localhost:5173
+npm run build     # production build → dist/
+npm run preview   # preview the production build → http://localhost:4173
+```
+
+---
+
+### 7 — Deploy to GitHub Pages
+
+```bash
+cd js-app
+npm run deploy    # builds and pushes dist/ to the gh-pages branch
+```
+
+In your GitHub repo go to **Settings → Pages → Branch: `gh-pages` → `/ (root)`**.
+
+Your app will be live at:
+```
+https://<your-username>.github.io/storyboard-visualization/
+```
+
+---
+
+## Project structure
+
+```
+storyboard-visualization/
+├── data/                          raw data files (CSV / Parquet)
+├── scripts/
+│   └── generate_js_data.py        converts data → js-app/public/data/data.json
+├── src/                           Python Dash app (for local use)
+│   └── app_2x2.py
+├── js-app/                        JavaScript app (static hosting)
+│   ├── public/data/data.json      generated — do not edit manually
+│   ├── src/
+│   │   ├── constants.js           ← edit IMAGE_BASE / VIDEO_BASE here
+│   │   ├── dataUtils.js           normalize, frameUrl helpers
+│   │   ├── figureBuilders.js      Plotly figure constructors
+│   │   ├── App.jsx                layout + shared state
+│   │   └── components/
+│   │       ├── DistPlot.jsx
+│   │       ├── ScatterPlot.jsx
+│   │       ├── FrameView.jsx
+│   │       └── VideoPlayer.jsx
+│   └── dist/                      production build (deploy this folder)
+└── requirements.txt               Python dependencies
+```
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| "No KM-type conditions detected" | Ensure at least one `_dist` column name contains `km` |
+| "No EB-type conditions detected" | Ensure at least one `_dist` column name contains `eb` |
+| Missing `clip_name` column | Rename your clip identifier column to `clip_name` |
+| Broken frame images | Update `IMAGE_BASE` in `js-app/src/constants.js` |
+| GitHub Pages shows blank page | Enable Pages in repo Settings; set branch to `gh-pages`, folder to `/ (root)` |
