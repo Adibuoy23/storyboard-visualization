@@ -3,6 +3,7 @@
 An interactive browser-based viewer for comparing kernel-density (KM) and event-boundary (EB) response distributions across video clips.
 
 **Live demo:** https://adibuoy23.github.io/storyboard-visualization/
+*(Access-restricted — request credentials via the form on the page)*
 
 ---
 
@@ -14,6 +15,29 @@ An interactive browser-based viewer for comparing kernel-density (KM) and event-
 | **Scatter (Peak Space)** | Every detected peak for all clips plotted as (sum, difference) of the two selected conditions. Selected clip is highlighted. Hover to highlight the corresponding peak in the distribution plot. |
 | **Timeline / Tile** | Peak frames from the selected clip arranged chronologically or as a grid. Hover to enlarge and highlight the peak in the distribution plot. |
 | **Video player** | The clip video; seeking is driven by hover events on all three plots. |
+
+---
+
+## Included datasets
+
+| Dataset | Description | Reference |
+|---|---|---|
+| **Storyboards fMRI** | KM (retrospective) and EB (realtime) distributions collected within coarse-grained events of BBC Sherlock, applied to open-access fMRI data | Upadhyayula et al. (2025), [doi:10.1101/2025.08.30.673233](https://doi.org/10.1101/2025.08.30.673233) |
+| **2×2 KM & EB** | Four conditions (realtime/retrospective × KM/EB) across 3-min clips with 10-sec overlap | Upadhyayula et al. (2026, in prep) |
+| **Mr. Bean** | Realtime EB and retrospective KM distributions for Mr. Bean clips (10-sec overlap) | — |
+
+### Downloading the preprocessed data
+
+The **Download data** button in the app header downloads a zip of the preprocessed, per-participant response CSVs for the selected dataset (key-moment selections and event-boundary button presses). These are the inputs to the KDE distributions shown in the plots. Each zip contains a `README.txt` listing the files and their columns.
+
+The bundles are built by `scripts/package_preprocessed.py` from the source files listed in `scripts/preprocessed_manifest.json`, and written to `js-app/public/downloads/`. To add or update a bundle, edit the manifest and re-run:
+
+```bash
+python3 scripts/package_preprocessed.py            # all datasets
+python3 scripts/package_preprocessed.py mrbean     # one dataset
+```
+
+Then add a `"download"` key to the dataset's entry in `js-app/public/data/datasets.json` (see step 6 below).
 
 ---
 
@@ -58,8 +82,8 @@ Your CSV or Parquet file must have these columns:
 | Column | Type | Description |
 |---|---|---|
 | `clip_name` | string | Unique identifier for each clip |
-| `time_ms` | int | Time in milliseconds within the clip |
-| `pdf_len` | int | Total length of the distribution (ms) |
+| `time_ms` | int | Time in milliseconds within the clip *(reconstructed from row index if absent)* |
+| `pdf_len` | int | Total length of the distribution in ms *(computed from max `time_ms` if absent)* |
 | `num_frames` | int | Total video frames in the clip |
 | `<cond>_dist` | float | One or more distribution columns |
 | `<cond>_peaks` | int (0/1) | Matching peak-indicator for each `_dist` column |
@@ -75,32 +99,27 @@ my_clip_1, 1, 60000, 1800, 0.0013, 0, 0.0009, 1
 ```
 
 **Condition naming** — conditions are auto-detected from column names:
-- A `<cond>_dist` column whose name contains **`km`** → KM-type (warm amber colours)
+- A `<cond>_dist` column whose name contains **`km`** or **`sb`** → KM-type (warm amber colours)
 - A `<cond>_dist` column whose name contains **`eb`** → EB-type (cool teal colours)
 - At least one of each is required
+- Peaks columns are fuzzy-matched: `sb_cont_dist` → `sb_peaks` is fine
 
-Examples that work: `km_dist`, `rt_km_dist`, `retro_km_dist`, `eb_dist`, `retro_eb_dist`
+Examples that work: `km_dist`, `rt_km_dist`, `retro_km_dist`, `eb_dist`, `rt_eb_dist`, `sb_cont_dist`
 
 ---
 
 ### 3 — Point the app at your video/image assets
 
-Open `js-app/src/constants.js` and update the two URL constants:
-
-```js
-export const IMAGE_BASE   = 'https://<your-host>/video_frames/';
-export const VIDEO_BASE   = 'https://<your-host>/videos/';
-export const CLIP_TOTAL_S = 190.0;   // total clip duration in seconds
-```
+Pass `--image-base` and `--video-base` when generating your data file (see step 4). These are stored in the dataset metadata and used automatically — no code changes needed.
 
 The app constructs URLs like:
 ```
 # Frame image
-IMAGE_BASE + clip_name + "/frames" + frameNumber.padStart(4,'0') + ".jpg"
+<image_base> + clip_name + "/frames" + frameNumber.padStart(4,'0') + ".jpg"
 # e.g. https://your-host/video_frames/my_clip_1/frames0042.jpg
 
 # Video
-VIDEO_BASE + clip_name + ".mp4"
+<video_base> + clip_name + ".mp4"
 # e.g. https://your-host/videos/my_clip_1.mp4
 ```
 
@@ -126,18 +145,46 @@ cd js-app && npm install
 # Default — looks for data/2x2_distributions.parquet, falls back to .csv
 python3 scripts/generate_js_data.py
 
-# Custom path
-python3 scripts/generate_js_data.py --input path/to/your_data.csv
+# Custom path with hosted assets
+python3 scripts/generate_js_data.py \
+  --input path/to/your_data.csv \
+  --image-base "https://your-host/frames/" \
+  --video-base "https://your-host/videos/" \
+  --output js-app/public/data/my_dataset.json
 
-# Adjust downsampling (default 50; 180k pts → 3.6k pts for display)
-python3 scripts/generate_js_data.py --downsample 30
+# All options
+python3 scripts/generate_js_data.py --help
 ```
 
-This writes `js-app/public/data/data.json` (~5–10 MB depending on clip count).
+Key arguments:
+
+| Argument | Default | Description |
+|---|---|---|
+| `--input` | `data/2x2_distributions.parquet` | Path to CSV or Parquet |
+| `--output` | `js-app/public/data/data.json` | Output JSON path |
+| `--clip-col` | `clip_name` | Column containing clip identifier |
+| `--time-offset` | `10` | Seconds added to time axis (use `0` if no overlap) |
+| `--image-base` | GitHub Pages default | Base URL for frame images |
+| `--video-base` | GitHub Pages default | Base URL for videos |
+| `--downsample` | `50` | Keep every Nth point for display (180k → 3.6k pts) |
 
 ---
 
-### 6 — Run locally
+### 6 — Register the dataset
+
+Add an entry to `js-app/public/data/datasets.json`:
+
+```json
+[
+  { "label": "My Dataset", "file": "my_dataset.json", "download": "my_dataset_preprocessed.zip" }
+]
+```
+
+The optional `download` key names a zip in `js-app/public/downloads/` (see *Downloading the preprocessed data* above); omit it to hide the download button for that dataset.
+
+---
+
+### 7 — Run locally
 
 ```bash
 cd js-app
@@ -148,11 +195,14 @@ npm run preview   # preview the production build → http://localhost:4173
 
 ---
 
-### 7 — Deploy to GitHub Pages
+### 8 — Deploy to GitHub Pages
 
 ```bash
-cd js-app
-npm run deploy    # builds and pushes dist/ to the gh-pages branch
+cd js-app/dist
+git config http.postBuffer 524288000
+git add -A
+git commit -m "Deploy"
+git push --force https://<username>:<token>@github.com/<username>/storyboard-visualization.git main:gh-pages
 ```
 
 In your GitHub repo go to **Settings → Pages → Branch: `gh-pages` → `/ (root)`**.
@@ -168,25 +218,35 @@ https://<your-username>.github.io/storyboard-visualization/
 
 ```
 storyboard-visualization/
-├── data/                          raw data files (CSV / Parquet)
+├── data/                               raw data files (CSV / Parquet) — gitignored
 ├── scripts/
-│   └── generate_js_data.py        converts data → js-app/public/data/data.json
-├── src/                           Python Dash app (for local use)
+│   ├── generate_js_data.py             converts data → JS-ready JSON
+│   ├── package_preprocessed.py         bundles per-participant CSVs into downloadable zips
+│   └── preprocessed_manifest.json      ← source files for each download bundle
+├── src/                                Python Dash app (for local use)
 │   └── app_2x2.py
-├── js-app/                        JavaScript app (static hosting)
-│   ├── public/data/data.json      generated — do not edit manually
+├── js-app/                             JavaScript app (static hosting)
+│   ├── public/data/
+│   │   ├── datasets.json               ← register datasets here
+│   │   ├── data.json                   2×2 KM & EB dataset
+│   │   ├── storyboards_fmri.json       Storyboards fMRI dataset
+│   │   └── mrbean.json                 Mr. Bean dataset
+│   ├── public/downloads/               preprocessed data zips (built by package_preprocessed.py)
 │   ├── src/
-│   │   ├── constants.js           ← edit IMAGE_BASE / VIDEO_BASE here
-│   │   ├── dataUtils.js           normalize, frameUrl helpers
-│   │   ├── figureBuilders.js      Plotly figure constructors
-│   │   ├── App.jsx                layout + shared state
+│   │   ├── appConfig.js                ← set password here
+│   │   ├── constants.js                shared style constants
+│   │   ├── dataUtils.js                normalize, frameUrl helpers
+│   │   ├── figureBuilders.js           Plotly figure constructors
+│   │   ├── App.jsx                     layout + shared state
 │   │   └── components/
+│   │       ├── PasswordGate.jsx        access control
+│   │       ├── HowToUse.jsx            tips dropdown
 │   │       ├── DistPlot.jsx
 │   │       ├── ScatterPlot.jsx
 │   │       ├── FrameView.jsx
 │   │       └── VideoPlayer.jsx
-│   └── dist/                      production build (deploy this folder)
-└── requirements.txt               Python dependencies
+│   └── dist/                           production build (deploy this folder)
+└── requirements.txt                    Python dependencies
 ```
 
 ---
@@ -195,8 +255,9 @@ storyboard-visualization/
 
 | Problem | Fix |
 |---|---|
-| "No KM-type conditions detected" | Ensure at least one `_dist` column name contains `km` |
+| "No KM-type conditions detected" | Ensure at least one `_dist` column name contains `km` or `sb` |
 | "No EB-type conditions detected" | Ensure at least one `_dist` column name contains `eb` |
-| Missing `clip_name` column | Rename your clip identifier column to `clip_name` |
-| Broken frame images | Update `IMAGE_BASE` in `js-app/src/constants.js` |
+| Missing `clip_name` column | Use `--clip-col` to specify the correct column name |
+| Blank frame images | Check `--image-base` URL and that frames are hosted at `<base>/<clip_name>/framesNNNN.jpg` |
 | GitHub Pages shows blank page | Enable Pages in repo Settings; set branch to `gh-pages`, folder to `/ (root)` |
+| Push fails with HTTP 400 | Run `git config http.postBuffer 524288000` before pushing |

@@ -116,6 +116,25 @@ export default function App() {
 
         <div style={SEP} />
 
+        {/* Download the per-participant preprocessed CSVs for the current dataset */}
+        {datasets.find(d => d.file === selectedDataset)?.download && (
+          <a
+            href={`./downloads/${datasets.find(d => d.file === selectedDataset).download}`}
+            download
+            title="Download the preprocessed per-participant CSV files for this dataset (zip)"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              background: 'white', border: '1px solid #ddd', borderRadius: 6,
+              padding: '5px 12px', fontSize: 12, fontWeight: 600,
+              color: '#2c3e50', textDecoration: 'none', whiteSpace: 'nowrap',
+            }}
+          >
+            ⬇ Download data
+          </a>
+        )}
+
+        <div style={SEP} />
+
         <HowToUse />
       </div>
 

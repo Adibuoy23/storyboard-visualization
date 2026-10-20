@@ -1,0 +1,12 @@
+# Large data files — regenerate with: python3 scripts/generate_js_data.py
+data/*.csv
+data/*.parquet
+
+# Python
+__pycache__/
+*.pyc
+.DS_Store
+
+# JS build artifacts
+js-app/node_modules/
+js-app/dist/

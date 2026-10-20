@@ -85,6 +85,19 @@ const SECTIONS = [
       </div>
     ),
   },
+  {
+    title: 'Downloading the data',
+    content: (
+      <div>
+        <p>The <strong>Download data</strong> button in the header downloads a zip of the preprocessed, per-participant response files for the currently selected dataset. These are the inputs to the kernel density estimates shown in the plots, so you can re-derive the distributions with your own bandwidth or peak-detection settings.</p>
+        <ul>
+          <li><strong>Key-moment (storyboard) files</strong> — one row per participant per selected frame, with the frame number, its time within the clip, and the clip name.</li>
+          <li><strong>Event-boundary files</strong> — one row per participant per button press, with the press time within the clip.</li>
+        </ul>
+        <p>Each zip includes a <code>README.txt</code> listing the files and their columns. The Mr. Bean bundle contains the retrospective key-moment selections only.</p>
+      </div>
+    ),
+  },
 ];
 
 export default function HowToUse() {
