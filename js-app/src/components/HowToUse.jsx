@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
+
+const PANEL_WIDTH = 460;
+const MARGIN      = 8;
 
 const SECTIONS = [
   {
@@ -103,10 +106,33 @@ const SECTIONS = [
 export default function HowToUse() {
   const [open,        setOpen]        = useState(false);
   const [openSection, setOpenSection] = useState(null);
+  const [pos,         setPos]         = useState({ top: 0, left: 0, width: PANEL_WIDTH });
+  const btnRef = useRef(null);
+
+  // Position the panel against the viewport (not the button) and clamp it so
+  // it never hangs off the left or right edge, whatever the header wraps to.
+  useLayoutEffect(() => {
+    if (!open) return;
+    const place = () => {
+      const r     = btnRef.current?.getBoundingClientRect();
+      if (!r) return;
+      const width = Math.min(PANEL_WIDTH, window.innerWidth - 2 * MARGIN);
+      const left  = Math.max(MARGIN, Math.min(r.right - width, window.innerWidth - width - MARGIN));
+      setPos({ top: r.bottom + 6, left, width });
+    };
+    place();
+    window.addEventListener('resize', place);
+    window.addEventListener('scroll', place, true);
+    return () => {
+      window.removeEventListener('resize', place);
+      window.removeEventListener('scroll', place, true);
+    };
+  }, [open]);
 
   return (
     <div style={{ position: 'relative' }}>
       <button
+        ref={btnRef}
         onClick={() => setOpen(o => !o)}
         style={{
           display: 'flex', alignItems: 'center', gap: 5,
@@ -122,10 +148,10 @@ export default function HowToUse() {
 
       {open && (
         <div style={{
-          position: 'absolute', top: 'calc(100% + 6px)', right: 0,
+          position: 'fixed', top: pos.top, left: pos.left,
           background: 'white', border: '1px solid #e0e0e0',
           borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-          width: 460, maxHeight: '80vh', overflowY: 'auto',
+          width: pos.width, maxHeight: `calc(100vh - ${pos.top + MARGIN}px)`, overflowY: 'auto',
           zIndex: 1000, fontFamily: 'Arial, sans-serif',
         }}>
           <div style={{
