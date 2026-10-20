@@ -50,7 +50,7 @@ const DistPlot = forwardRef(function DistPlot(
       const timeS    = displayS - TO;
       const cd       = ad.data[cn];
       const peakIdx  = Math.max(0, Math.min(Math.round(timeS * 1000), cd.pdf_len - 1));
-      const url      = frameUrl(cn, peakIdx, cd.num_frames, TO);
+      const url      = frameUrl(cn, peakIdx, cd.num_frames, TO, cd.pdf_len, ad.meta.image_base);
       if (seek) seek(displayS);
       setTooltip({ url, ts: fmtTs(timeS), x: e.event.clientX, y: e.event.clientY });
     });

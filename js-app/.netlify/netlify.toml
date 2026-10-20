@@ -1,0 +1,28 @@
+plugins = []
+headers = []
+redirects = []
+
+[functions]
+
+[functions."*"]
+
+[build]
+publish = "/Users/adibuoy23/work/WashU/storyboard-visualization/js-app/dist"
+publishOrigin = "ui"
+commandOrigin = "ui"
+base = "/Users/adibuoy23/work/WashU/storyboard-visualization/js-app"
+command = "npm run build"
+
+[build.environment]
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]

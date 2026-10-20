@@ -94,7 +94,7 @@ function TileView({ appData, clipName, cond1, cond2 }) {
             </div>
             <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
               {pd.indices.map((idx, i) => {
-                const url = frameUrl(clipName, idx, cd.num_frames, TO);
+                const url = frameUrl(clipName, idx, cd.num_frames, TO, cd.pdf_len, meta.image_base);
                 const ts  = fmtTs(idx / 1000.0);
                 return (
                   <div key={i} style={{ textAlign: 'center' }}>

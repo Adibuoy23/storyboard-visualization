@@ -1,7 +1,5 @@
 import { useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
-import { VIDEO_BASE } from '../constants.js';
-
-const VideoPlayer = forwardRef(function VideoPlayer({ clipName }, ref) {
+const VideoPlayer = forwardRef(function VideoPlayer({ clipName, videoBase }, ref) {
   const videoRef = useRef(null);
 
   useImperativeHandle(ref, () => ({
@@ -28,7 +26,7 @@ const VideoPlayer = forwardRef(function VideoPlayer({ clipName }, ref) {
         style={{ width: '100%', borderRadius: 4 }}
         preload="metadata"
       >
-        {clipName && <source src={`${VIDEO_BASE}${clipName}.mp4`} type="video/mp4" />}
+        {clipName && videoBase && <source src={`${videoBase}${clipName}.mp4`} type="video/mp4" />}
       </video>
     </div>
   );
