@@ -112,12 +112,15 @@ export function buildScatterFig(appData, clipName, cond1, cond2, scaleType) {
   }
 
   const annotations = [
-    { x: 0.5, y: 1.07, xref: 'paper', yref: 'paper', showarrow: false,
-      text: `▲ more ${meta.labels[cond1]}`, font: { size: 12, color: meta.hex_colors[cond1] }, xanchor: 'center' },
-    { x: 0.5, y: -0.13, xref: 'paper', yref: 'paper', showarrow: false,
-      text: `▼ more ${meta.labels[cond2]}`, font: { size: 12, color: meta.hex_colors[cond2] }, xanchor: 'center' },
-    { x: 1.03, y: 0.5, xref: 'paper', yref: 'paper', showarrow: false,
-      text: '▶ both', font: { size: 12, color: '#888' }, xanchor: 'left', yanchor: 'middle' },
+    { x: 0.5, y: 0.97, xref: 'paper', yref: 'paper', showarrow: false,
+      text: `▲ more ${meta.labels[cond1]}`, font: { size: 12, color: meta.hex_colors[cond1] },
+      xanchor: 'center', yanchor: 'top' },
+    { x: 0.5, y: 0.03, xref: 'paper', yref: 'paper', showarrow: false,
+      text: `▼ more ${meta.labels[cond2]}`, font: { size: 12, color: meta.hex_colors[cond2] },
+      xanchor: 'center', yanchor: 'bottom' },
+    { x: 0.97, y: 0.5, xref: 'paper', yref: 'paper', showarrow: false,
+      text: '▶ both', font: { size: 12, color: '#888' },
+      xanchor: 'right', yanchor: 'middle' },
   ];
 
   const layout = {
@@ -138,9 +141,9 @@ export function buildScatterFig(appData, clipName, cond1, cond2, scaleType) {
       tickfont: { size: 12, color: '#555' }, ticks: 'outside',
     },
     legend: {
-      orientation: 'h', y: 1.01, x: 0.5, xanchor: 'center',
-      bgcolor: 'rgba(255,255,255,0.9)', bordercolor: 'rgba(0,0,0,0.08)',
-      borderwidth: 1, font: { size: 12, color: '#333' },
+      orientation: 'v', x: 0.99, y: 0.99, xanchor: 'right', yanchor: 'top',
+      bgcolor: 'rgba(0,0,0,0)', borderwidth: 0,
+      font: { size: 12, color: '#333' },
     },
     margin: { l: 55, r: 52, t: 44, b: 55 },
     annotations,
@@ -159,8 +162,9 @@ export function buildTimelineFig(appData, clipName, cond1, cond2) {
   const xMin     = TO - 4;
   const xMax     = duration + 4;
 
-  const IMG_W       = 16.0;
-  const IMG_H       = 0.75;
+  const clipDurationS = cd.pdf_len / 1000.0;
+  const IMG_W = Math.max(1.5, clipDurationS * 16.0 / 190.0);  // scale with clip length
+  const IMG_H = 0.75;
   const Y_TOP_CTR   =  1.22;
   const Y_BOT_CTR   = -1.22;
   const Y_TOP_ARROW = Y_TOP_CTR - IMG_H / 2;
@@ -212,7 +216,7 @@ export function buildTimelineFig(appData, clipName, cond1, cond2) {
     for (let i = 0; i < peakData.indices.length; i++) {
       const pidx = peakData.indices[i];
       const t    = peakData.time_s[i];
-      const url  = frameUrl(clipName, pidx, cd.num_frames, TO);
+      const url  = frameUrl(clipName, pidx, cd.num_frames, TO, cd.pdf_len, meta.image_base);
       const ts   = fmtTs(pidx / 1000.0);
 
       peakTimes.push(t);

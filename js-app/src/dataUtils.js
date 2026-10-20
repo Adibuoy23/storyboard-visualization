@@ -1,4 +1,3 @@
-import { IMAGE_BASE, CLIP_TOTAL_S } from './constants.js';
 
 export function normalizeArray(arr, scaleType, params) {
   if (scaleType === 'zscore') {
@@ -25,11 +24,12 @@ export function normMax(scaleType, params) {
   return params.std > 0 ? (params.max - params.mean) / params.std : 0;
 }
 
-export function frameUrl(clipName, peakIndex, numFrames, timeOffset) {
-  const rawS = peakIndex / 1000.0 + timeOffset;
-  let f = Math.floor(rawS / CLIP_TOTAL_S * numFrames);
+export function frameUrl(clipName, peakIndex, numFrames, timeOffset, pdfLen, imageBase) {
+  const rawS       = peakIndex / 1000.0 + timeOffset;
+  const clipTotalS = pdfLen   / 1000.0 + timeOffset;
+  let f = Math.floor((rawS / clipTotalS) * numFrames);
   f = Math.max(0, Math.min(f, numFrames - 1));
-  return `${IMAGE_BASE}${clipName}/frames${String(f).padStart(4, '0')}.jpg`;
+  return `${imageBase}${clipName}/frames${String(f).padStart(4, '0')}.jpg`;
 }
 
 export function fmtTs(tS) {

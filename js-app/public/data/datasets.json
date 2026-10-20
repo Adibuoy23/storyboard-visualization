@@ -1,4 +1,5 @@
 [
-  { "label": "2×2 KM & EB",      "file": "data.json" },
-  { "label": "Storyboards fMRI", "file": "storyboards_fmri.json" }
+  { "label": "Storyboards fMRI", "file": "storyboards_fmri.json", "download": "storyboards_fmri_preprocessed.zip" },
+  { "label": "2×2 KM & EB",      "file": "data.json",             "download": "km_eb_2x2_preprocessed.zip" },
+  { "label": "Mr. Bean",          "file": "mrbean.json",           "download": "mrbean_preprocessed.zip" }
 ]

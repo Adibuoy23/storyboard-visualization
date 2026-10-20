@@ -1,0 +1,42 @@
+{
+  "_comment": "Maps each app dataset to the per-participant preprocessed CSVs bundled for download. Paths are absolute or relative to the repo root; ~ is expanded. Run: python3 scripts/package_preprocessed.py",
+  "storyboards_fmri": {
+    "label": "Storyboards fMRI",
+    "zip": "storyboards_fmri_preprocessed.zip",
+    "files": [
+      {"src": "/Volumes/ATC/storyboards_fMRI_2025/data/topic_modeling/sherlock/preprocessed_data/sherlock_storyboards_preprocessed_data.csv",
+       "name": "sherlock_storyboards_preprocessed_data.csv",
+       "desc": "Retrospective key-moment (storyboard) selections, one row per participant per selected frame"},
+      {"src": "/Volumes/ATC/storyboards_fMRI_2025/data/topic_modeling/sherlock/preprocessed_data/sherlock_event_boundaries_preprocessed_data.csv",
+       "name": "sherlock_event_boundaries_preprocessed_data.csv",
+       "desc": "Realtime event-boundary button presses, one row per participant per press"}
+    ]
+  },
+  "km_eb_2x2": {
+    "label": "2x2 KM & EB",
+    "zip": "km_eb_2x2_preprocessed.zip",
+    "files": [
+      {"src": "~/Library/CloudStorage/Box-Box/DCL_ARCHIVE/Documents/Events/exp171_Storyboards&EventBoundaries/Data/realtime_preprocessed/storyboards_preprocessed_data_new.csv",
+       "name": "realtime_KM_preprocessed_data.csv",
+       "desc": "Realtime key-moment responses"},
+      {"src": "~/Library/CloudStorage/Box-Box/DCL_ARCHIVE/Documents/Events/exp171_Storyboards&EventBoundaries/Data/retrospective_preprocessed/storyboards_preprocessed_data.csv",
+       "name": "retrospective_KM_preprocessed_data.csv",
+       "desc": "Retrospective key-moment selections"},
+      {"src": "~/Library/CloudStorage/Box-Box/DCL_ARCHIVE/Documents/Events/exp171_Storyboards&EventBoundaries/Data/realtime_preprocessed/event_boundaries_preprocessed_data.csv",
+       "name": "realtime_EB_preprocessed_data.csv",
+       "desc": "Realtime event-boundary button presses"},
+      {"src": "~/Library/CloudStorage/Box-Box/DCL_ARCHIVE/Documents/Events/exp171_Storyboards&EventBoundaries/Data/retrospective_preprocessed/event_boundaries_preprocessed_data.csv",
+       "name": "retrospective_EB_preprocessed_data.csv",
+       "desc": "Retrospective event-boundary selections"}
+    ]
+  },
+  "mrbean": {
+    "label": "Mr. Bean",
+    "zip": "mrbean_preprocessed.zip",
+    "files": [
+      {"src": "~/Library/CloudStorage/Box-Box/ComplexMemLab/Personal Folders/Adi/experiments/storyboards_fMRI_recall/data/behavioral/storyboard_data/preprocessed_data/MrBean_storyboards_preprocessed_data.csv",
+       "name": "MrBean_storyboards_preprocessed_data.csv",
+       "desc": "Retrospective key-moment (storyboard) selections"}
+    ]
+  }
+}

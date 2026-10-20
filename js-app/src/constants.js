@@ -1,6 +1,10 @@
 // Hosting URLs — update these if you move the video/image assets
-export const IMAGE_BASE   = 'https://adibuoy23.github.io/event_representations/video_frames/';
-export const VIDEO_BASE   = 'https://adibuoy23.github.io/event_representations/videos/';
+// GitHub Pages (2x2 / Storyboards fMRI datasets)
+// export const IMAGE_BASE = 'https://adibuoy23.github.io/event_representations/video_frames/';
+// export const VIDEO_BASE = 'https://adibuoy23.github.io/event_representations/videos/';
+// CDM Lab server (Mr. Bean dataset)
+export const IMAGE_BASE   = 'https://cdmlab.a2hosted.com/adi/segmented_stimuli_frames/';
+export const VIDEO_BASE   = 'https://cdmlab.a2hosted.com/adi/segmented_stimuli/';
 export const CLIP_TOTAL_S = 190.0;   // total clip duration in seconds (for frame-index math)
 
 // Card style shared across panels

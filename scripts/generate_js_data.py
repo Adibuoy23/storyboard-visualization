@@ -71,9 +71,17 @@ _PART_LABELS = {
     "cont": "Continuous", "hrf": "HRF", "fir": "FIR", "pca": "PCA",
 }
 
+# Full condition name overrides — takes priority over part-based label generation
+_LABEL_OVERRIDES = {
+    "sb_cont": "KM (Retrospective)",
+    "eb_cont": "EB (Realtime)",
+}
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 def make_label(cond: str) -> str:
+    if cond in _LABEL_OVERRIDES:
+        return _LABEL_OVERRIDES[cond]
     return " ".join(_PART_LABELS.get(p, p.capitalize()) for p in cond.split("_"))
 
 def cond_type(cond: str) -> str:
@@ -125,6 +133,9 @@ def assign_colors(conditions):
 def main():
     default_out = os.path.join(ROOT, "js-app", "public", "data", "data.json")
 
+    DEFAULT_IMAGE_BASE = "https://adibuoy23.github.io/event_representations/video_frames/"
+    DEFAULT_VIDEO_BASE = "https://adibuoy23.github.io/event_representations/videos/"
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--input",       default=None)
     parser.add_argument("--output",      default=default_out)
@@ -133,6 +144,10 @@ def main():
     parser.add_argument("--time-offset", default=10.0, type=float,
                         help="Seconds added to time axis for display (default: 10)")
     parser.add_argument("--downsample",  default=50, type=int)
+    parser.add_argument("--image-base",  default=DEFAULT_IMAGE_BASE,
+                        help="Base URL for frame images: <image_base><clip_name>/framesNNNN.jpg")
+    parser.add_argument("--video-base",  default=DEFAULT_VIDEO_BASE,
+                        help="Base URL for videos: <video_base><clip_name>.mp4")
     args = parser.parse_args()
 
     # ── Load ──────────────────────────────────────────────────────────────────
@@ -158,10 +173,15 @@ def main():
         print("  'time_ms' not found — reconstructing from row index within each clip")
         df["time_ms"] = df.groupby(clip_col).cumcount()
 
+    # ── Auto-compute pdf_len if missing ───────────────────────────────────────
+    if "pdf_len" not in df.columns:
+        print("  'pdf_len' not found — computing from max(time_ms) + 1 per clip")
+        pdf_len_map = (df.groupby(clip_col)["time_ms"].max() + 1).astype(int)
+        df["pdf_len"] = df[clip_col].map(pdf_len_map)
+
     # ── Validate other required columns ───────────────────────────────────────
-    for col in ("pdf_len", "num_frames"):
-        if col not in df.columns:
-            raise ValueError(f"Required column '{col}' not found.")
+    if "num_frames" not in df.columns:
+        raise ValueError("Required column 'num_frames' not found.")
 
     # ── Clip order ────────────────────────────────────────────────────────────
     if "clip" in df.columns:
@@ -204,6 +224,8 @@ def main():
         "fill_colors": {c: colors[c]["fill_color"]  for c in conditions},
         "hex_colors":  {c: colors[c]["hex"]         for c in conditions},
         "time_offset": TO,
+        "image_base":  args.image_base,
+        "video_base":  args.video_base,
     }
 
     # ── Per-clip data ─────────────────────────────────────────────────────────

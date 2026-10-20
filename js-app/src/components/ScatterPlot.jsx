@@ -49,7 +49,7 @@ export default function ScatterPlot({
         if (d < minDist) { minDist = d; closest = p; }
       }
 
-      const url = frameUrl(cn, closest.idx, cd.num_frames, TO);
+      const url = frameUrl(cn, closest.idx, cd.num_frames, TO, cd.pdf_len, ad.meta.image_base);
 
       if (dr?.current) {
         const maxY = Math.max(normMax(st, cd.norm_params[c1]), normMax(st, cd.norm_params[c2]));

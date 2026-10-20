@@ -3,11 +3,14 @@ import DistPlot from './components/DistPlot.jsx';
 import ScatterPlot from './components/ScatterPlot.jsx';
 import FrameView from './components/FrameView.jsx';
 import VideoPlayer from './components/VideoPlayer.jsx';
+import PasswordGate from './components/PasswordGate.jsx';
+import HowToUse from './components/HowToUse.jsx';
 import { CARD } from './constants.js';
 
 const SEP = { width: 1, height: 28, background: '#e0e0e0', flexShrink: 0 };
 
 export default function App() {
+  const [unlocked,        setUnlocked]        = useState(false);
   const [datasets,        setDatasets]        = useState([]);
   const [selectedDataset, setSelectedDataset] = useState(null);
   const [appData,         setAppData]         = useState(null);
@@ -45,6 +48,8 @@ export default function App() {
   }, [selectedDataset]);
 
   const seekVideo = (time) => videoRef.current?.seekTo(time);
+
+  if (!unlocked) return <PasswordGate onUnlock={() => setUnlocked(true)} />;
 
   const loading = !appData || !cond1 || !cond2;
 
@@ -108,6 +113,29 @@ export default function App() {
           value={viewType}
           onChange={setViewType}
         />
+
+        <div style={SEP} />
+
+        {/* Download the per-participant preprocessed CSVs for the current dataset */}
+        {datasets.find(d => d.file === selectedDataset)?.download && (
+          <a
+            href={`./downloads/${datasets.find(d => d.file === selectedDataset).download}`}
+            download
+            title="Download the preprocessed per-participant CSV files for this dataset (zip)"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+              background: 'white', border: '1px solid #ddd', borderRadius: 6,
+              padding: '5px 12px', fontSize: 12, fontWeight: 600,
+              color: '#2c3e50', textDecoration: 'none', whiteSpace: 'nowrap',
+            }}
+          >
+            ⬇ Download data
+          </a>
+        )}
+
+        <div style={SEP} />
+
+        <HowToUse />
       </div>
 
       {/* ── Loading overlay ──────────────────────────────────────────────── */}
@@ -124,7 +152,7 @@ export default function App() {
         <div style={{ display: 'flex', alignItems: 'stretch', gap: 12, padding: '12px 12px 6px 12px' }}>
 
           <div style={{ ...CARD, flex: '0 0 200px', width: 200, minWidth: 0, overflow: 'hidden' }}>
-            <VideoPlayer ref={videoRef} clipName={clipName} />
+            <VideoPlayer ref={videoRef} clipName={clipName} videoBase={appData?.meta?.video_base} />
           </div>
 
           <div style={{ ...CARD, flex: '1 1 0', minWidth: 0, overflow: 'hidden' }}>
